@@ -1,5 +1,16 @@
 let tasks;
 let names;
+
+function compare( a, b ) {
+    if ( a.hva < b.hva ){
+      return -1;
+    }
+    if ( a.hva > b.hva ){
+      return 1;
+    }
+    return 0;
+  }
+
 const x = () => {
     const timestamp = Date.now();
     $.getJSON("https://sar-reg.no/backend/Oppdrag.php?time=" + timestamp, {}, function (data) {
