@@ -1,4 +1,4 @@
-// VERSION 1.0.1
+// VERSION 1.0.2
 
 
 let tasks;
@@ -113,7 +113,7 @@ function clickX(event) {
         const otherSelects = document.querySelectorAll('[id^="select-"]');
         otherSelects.forEach(select => {
             const x = select.id.split('-')[1];
-            if (select?.id !== `select-${y}`) {
+            if (select.id !== `select-${y}`) {
                 select.classList.add('hide');
                 document.getElementById(`draggable-${x}`).classList.remove('hide');
             }
