@@ -14,75 +14,76 @@ function compare( a, b ) {
 const x = () => {
     const timestamp = Date.now();
     $.getJSON("https://sar-reg.no/backend/Oppdrag.php?time=" + timestamp, {}, function (data) {
-    tasks = data;
-    $.getJSON("https://sar-reg.no/backend/OppdragLag.php?time=" + timestamp, {}, function (data2) {
-        document.querySelectorAll('.example-draggable').forEach(e => e.remove());
-        names = data2;
-        data.forEach(function (d, i) {
-            var tag = document.createElement("div");
-            tag.id = `adraggable-${i+1}`
-            tag.classList.add("example-draggable");
-            tag.draggable = true;
-            tag.addEventListener("dragstart", onDragStart);
-            
-            var s = document.createElement("span");
-            s.id = `draggable-${i+1}`
-            s.innerHTML = d.hva;
-            tag.appendChild(s);
-            var tag2 = document.createElement("select");
-            tag2.id = `select-${i+1}`;
-            tag2.classList.add("hide");
-            tag2.addEventListener('change', clickY);
-            var emptyOption = document.createElement("option");
-            emptyOption.id = '';
-            emptyOption.value = '';
-            emptyOption.innerHTML = '';
-            tag2.appendChild(emptyOption);
-            data2.forEach((d2, j) => {
-                var tag3 = document.createElement("option");
-                tag3.id = d2.id;
-                tag3.value = d2.id;
-                tag3.innerHTML = d2.navn;
-                if (d2.id === d.lag)
-                tag3.setAttribute('selected', true);
-                tag2.appendChild(tag3);
-            });
+        data = data.sort(compare);
+        tasks = data;
+        $.getJSON("https://sar-reg.no/backend/OppdragLag.php?time=" + timestamp, {}, function (data2) {
+            document.querySelectorAll('.example-draggable').forEach(e => e.remove());
+            names = data2;
+            data.forEach(function (d, i) {
+                var tag = document.createElement("div");
+                tag.id = `adraggable-${i+1}`
+                tag.classList.add("example-draggable");
+                tag.draggable = true;
+                tag.addEventListener("dragstart", onDragStart);
+                
+                var s = document.createElement("span");
+                s.id = `draggable-${i+1}`
+                s.innerHTML = d.hva;
+                tag.appendChild(s);
+                var tag2 = document.createElement("select");
+                tag2.id = `select-${i+1}`;
+                tag2.classList.add("hide");
+                tag2.addEventListener('change', clickY);
+                var emptyOption = document.createElement("option");
+                emptyOption.id = '';
+                emptyOption.value = '';
+                emptyOption.innerHTML = '';
+                tag2.appendChild(emptyOption);
+                data2.forEach((d2, j) => {
+                    var tag3 = document.createElement("option");
+                    tag3.id = d2.id;
+                    tag3.value = d2.id;
+                    tag3.innerHTML = d2.navn;
+                    if (d2.id === d.lag)
+                    tag3.setAttribute('selected', true);
+                    tag2.appendChild(tag3);
+                });
 
-            tag.appendChild(tag2);
-            let element;
-            switch (d.status) {
-                case '0':
-                    element = document.getElementById("todo");
-                    tag.classList.add("todo-color");
-                    tag.addEventListener("click", clickX);
-                    break;
-                case '1':
-                    element = document.getElementById("assigned");
-                    tag.classList.add("assigned-color");
-                    tag.addEventListener("click", clickX);
-                    break;
-                case '2':
-                    element = document.getElementById("progress");
-                    tag.classList.add("progress-color");
-                    break;
-                case '3':
-                    element = document.getElementById("finished");
-                    tag.classList.add("finished-color");
-                    break;
-                case '5':
-                    element = document.getElementById("planned");
-                    tag.classList.add("planned-color");
-                    tag.addEventListener("click", clickX);
-                    break;
-                default:
-                    element = document.getElementById("todo");
-                    tag.classList.add("todo-color");
-                    tag.addEventListener("click", clickX);
-            }
-            element.appendChild(tag);
+                tag.appendChild(tag2);
+                let element;
+                switch (d.status) {
+                    case '0':
+                        element = document.getElementById("todo");
+                        tag.classList.add("todo-color");
+                        tag.addEventListener("click", clickX);
+                        break;
+                    case '1':
+                        element = document.getElementById("assigned");
+                        tag.classList.add("assigned-color");
+                        tag.addEventListener("click", clickX);
+                        break;
+                    case '2':
+                        element = document.getElementById("progress");
+                        tag.classList.add("progress-color");
+                        break;
+                    case '3':
+                        element = document.getElementById("finished");
+                        tag.classList.add("finished-color");
+                        break;
+                    case '5':
+                        element = document.getElementById("planned");
+                        tag.classList.add("planned-color");
+                        tag.addEventListener("click", clickX);
+                        break;
+                    default:
+                        element = document.getElementById("todo");
+                        tag.classList.add("todo-color");
+                        tag.addEventListener("click", clickX);
+                }
+                element.appendChild(tag);
+            });
         });
     });
-});
 }
 x();
 setInterval(() => {
@@ -98,11 +99,27 @@ const isEditMode = () => {
 }
 
 function clickX(event) {
-
     const y = event.target.id.split('-')[1];
+    if (document.getElementById(`draggable-${y}`).classList[0] === 'hide') {
+        document.getElementById(`draggable-${y}`).classList.remove('hide');
+        document.getElementById(`select-${y}`).classList.add('hide');
+    } else {
+        document.getElementById(`draggable-${y}`).classList.add('hide');
+        document.getElementById(`select-${y}`).classList.remove('hide');
+        const otherSelects = document.querySelectorAll('[id^="select-"]');
+        otherSelects.forEach(select => {
+            const x = select.id.split('-')[1];
+            if (select?.id !== `select-${y}`) {
+                select.classList.add('hide');
+                document.getElementById(`draggable-${x}`).classList.remove('hide');
+            }
+        })
+        document.getElementById(`select-${y}`).classList.remove('hide');
+        
+    }
+    console.log(document.getElementById(`draggable-${y}`).classList[0]);
     // const x = document.getElementById(event.target.id)
-    document.getElementById(`draggable-${y}`).classList.add('hide');
-    document.getElementById(`select-${y}`).classList.remove('hide');
+    
 }
 
 function clickY(event) {
