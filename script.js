@@ -1,4 +1,4 @@
-// VERSION 1.0.0
+// VERSION 1.0.1
 
 
 let tasks;
@@ -217,4 +217,20 @@ function onDrop(event) {
     }
     const link = `https://sar-reg.no/backend/OppdragChange.php?id=${taskId}&status=${statusId}&userId=${userId}`
     $.getJSON(link, {}, function (data) {});
+}
+
+function containerClicked(event) {
+    console.log(event.target.id);
+    const id = event.target.id;
+    if (id.startsWith('draggable') || id.startsWith('adraggable') || id.startsWith('select')) {
+        return;
+    }
+    const selects = document.querySelectorAll('[id^="select-"]');
+    selects.forEach(select => {
+        select.classList.add('hide');
+    });
+    const selects2 = document.querySelectorAll('[id^="draggable-"]');
+    selects2.forEach(select => {
+        select.classList.remove('hide');
+    });
 }
