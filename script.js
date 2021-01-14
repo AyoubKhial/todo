@@ -5,6 +5,7 @@ const x = () => {
     $.getJSON("https://sar-reg.no/backend/Oppdrag.php?time=" + timestamp, {}, function (data) {
     tasks = data;
     $.getJSON("https://sar-reg.no/backend/OppdragLag.php?time=" + timestamp, {}, function (data2) {
+        document.querySelectorAll('.example-draggable').forEach(e => e.remove());
         names = data2;
         data.forEach(function (d, i) {
             // add div
@@ -67,7 +68,6 @@ const x = () => {
 }
 x();
 setInterval(() => {
-    document.querySelectorAll('.example-draggable').forEach(e => e.remove());
     x()
 }, 5000);
 
