@@ -130,7 +130,6 @@ function clickY(event) {
             statusId = '5'
             break;
     }
-    console.log(taskId, statusId, userId);
     const link = `https://sar-reg.no/backend/OppdragChange.php?id=${taskId}&status=${statusId}&userId=${userId}`
     $.getJSON(link, {}, function (data) {
         console.log(data)
@@ -150,16 +149,24 @@ function onDragOver(event) {
 }
 
 function onDrop(event) {
-
+    let dropElement = event.target;
+    if (event.target.id.startsWith('adraggable') || event.target.id.startsWith('draggable')) {
+        if (event.path[1].id.startsWith('adraggable')) {
+            dropElement = document.getElementById(event.path[2].id);
+        } else {
+            dropElement = document.getElementById(event.path[1].id);
+        }
+        
+    }
     const id = event.dataTransfer.getData("text");
     const y = id.split('-')[1];
     const draggableElement = document.getElementById(id);
-    const dropzone = event.target;
+    const dropzone = dropElement;
+    console.log(dropzone.id);
     dropzone.appendChild(draggableElement);
     event.dataTransfer.clearData();
     const id3 = `select-${y}`;
     const x = document.getElementById(id3);
-    console.log(x);
     const taskId = tasks.find(task => task.hva === draggableElement.innerText).id;
     const userId = x.value;
     let statusId;
@@ -180,9 +187,6 @@ function onDrop(event) {
             statusId = '5'
             break;
     }
-    console.log(taskId, statusId, userId);
     const link = `https://sar-reg.no/backend/OppdragChange.php?id=${taskId}&status=${statusId}&userId=${userId}`
-    $.getJSON(link, {}, function (data) {
-        console.log(data)
-    });
+    $.getJSON(link, {}, function (data) {});
 }
