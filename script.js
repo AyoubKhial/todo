@@ -67,9 +67,9 @@ const x = () => {
 }
 x();
 setInterval(() => {
-    document.querySelectorAll('.example-draggable').forEach(e => e.remove());
-    x()
-}, 5000);
+    // document.querySelectorAll('.example-draggable').forEach(e => e.remove());
+    window.location.reload(1);
+}, 10000);
 
 function clickX(event) {
 
