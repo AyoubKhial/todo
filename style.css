@@ -30,3 +30,21 @@
   .hide {
       display: none
   }
+
+  .todo-color {
+    background-color: #fc5185
+  }
+
+  .assigned-color {
+    background-color: #43dde6
+  }
+.progress-color {
+  background-color: #17b978;
+}
+.finished-color {
+  background-color: #feb062;
+}
+
+.planned-color {
+  background-color: #f6ea8c;
+}

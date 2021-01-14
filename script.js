@@ -8,7 +8,6 @@ const x = () => {
         document.querySelectorAll('.example-draggable').forEach(e => e.remove());
         names = data2;
         data.forEach(function (d, i) {
-            // add div
             var tag = document.createElement("div");
             tag.id = `adraggable-${i+1}`
             tag.classList.add("example-draggable");
@@ -16,17 +15,10 @@ const x = () => {
             tag.addEventListener("dragstart", onDragStart);
             tag.addEventListener("click", clickX);
             var s = document.createElement("span");
-            /* s.addEventListener('click', (e) => {
-                e.stopPropagation();
-            }) */
             s.id = `draggable-${i+1}`
             s.innerHTML = d.hva;
             tag.appendChild(s);
-            // add div
             var tag2 = document.createElement("select");
-            /* tag2.addEventListener('click', (e) => {
-                e.stopPropagation();
-            }) */
             tag2.id = `select-${i+1}`;
             tag2.classList.add("hide");
             tag2.addEventListener('change', clickY);
@@ -45,21 +37,27 @@ const x = () => {
             switch (d.status) {
                 case '0':
                     element = document.getElementById("todo");
+                    tag.classList.add("todo-color");
                     break;
                 case '1':
                     element = document.getElementById("assigned");
+                    tag.classList.add("assigned-color");
                     break;
                 case '2':
                     element = document.getElementById("progress");
+                    tag.classList.add("progress-color");
                     break;
                 case '3':
                     element = document.getElementById("finished");
+                    tag.classList.add("finished-color");
                     break;
                 case '5':
                     element = document.getElementById("planned");
+                    tag.classList.add("planned-color");
                     break;
                 default:
                     element = document.getElementById("todo");
+                    tag.classList.add("todo-color");
             }
             element.appendChild(tag);
         });
