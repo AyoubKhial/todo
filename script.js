@@ -33,6 +33,11 @@ const x = () => {
             tag2.id = `select-${i+1}`;
             tag2.classList.add("hide");
             tag2.addEventListener('change', clickY);
+            var emptyOption = document.createElement("option");
+            emptyOption.id = '';
+            emptyOption.value = '';
+            emptyOption.innerHTML = '';
+            tag2.appendChild(emptyOption);
             data2.forEach((d2, j) => {
                 var tag3 = document.createElement("option");
                 tag3.id = d2.id;
