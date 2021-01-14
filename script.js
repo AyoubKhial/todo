@@ -1,3 +1,6 @@
+// VERSION 1.0.0
+
+
 let tasks;
 let names;
 
@@ -44,8 +47,7 @@ const x = () => {
                     tag3.id = d2.id;
                     tag3.value = d2.id;
                     tag3.innerHTML = d2.navn;
-                    if (d2.id === d.lag)
-                    tag3.setAttribute('selected', true);
+                    if (d2.id === d.lag) tag3.setAttribute('selected', true);
                     tag2.appendChild(tag3);
                 });
 
@@ -99,6 +101,8 @@ const isEditMode = () => {
 }
 
 function clickX(event) {
+    console.log(event.target.id);
+    if (event.target.id.startsWith('select')) return;
     const y = event.target.id.split('-')[1];
     if (document.getElementById(`draggable-${y}`).classList[0] === 'hide') {
         document.getElementById(`draggable-${y}`).classList.remove('hide');
@@ -117,9 +121,7 @@ function clickX(event) {
         document.getElementById(`select-${y}`).classList.remove('hide');
         
     }
-    console.log(document.getElementById(`draggable-${y}`).classList[0]);
     // const x = document.getElementById(event.target.id)
-    
 }
 
 function clickY(event) {
