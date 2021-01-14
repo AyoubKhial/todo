@@ -68,8 +68,16 @@ const x = () => {
 }
 x();
 setInterval(() => {
-    x()
+    if (!isEditMode()) x()
 }, 5000);
+
+const isEditMode = () => {
+    const selects = document.querySelectorAll('[id^="select-"]');
+    for(select of selects) {
+        if (select.classList[0] !== 'hide') return true;
+    }
+    return false;
+}
 
 function clickX(event) {
 
