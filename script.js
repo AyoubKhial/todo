@@ -24,7 +24,7 @@ const x = () => {
             tag.classList.add("example-draggable");
             tag.draggable = true;
             tag.addEventListener("dragstart", onDragStart);
-            tag.addEventListener("click", clickX);
+            
             var s = document.createElement("span");
             s.id = `draggable-${i+1}`
             s.innerHTML = d.hva;
@@ -54,10 +54,12 @@ const x = () => {
                 case '0':
                     element = document.getElementById("todo");
                     tag.classList.add("todo-color");
+                    tag.addEventListener("click", clickX);
                     break;
                 case '1':
                     element = document.getElementById("assigned");
                     tag.classList.add("assigned-color");
+                    tag.addEventListener("click", clickX);
                     break;
                 case '2':
                     element = document.getElementById("progress");
@@ -70,10 +72,12 @@ const x = () => {
                 case '5':
                     element = document.getElementById("planned");
                     tag.classList.add("planned-color");
+                    tag.addEventListener("click", clickX);
                     break;
                 default:
                     element = document.getElementById("todo");
                     tag.classList.add("todo-color");
+                    tag.addEventListener("click", clickX);
             }
             element.appendChild(tag);
         });
