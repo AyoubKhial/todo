@@ -1,9 +1,10 @@
 let tasks;
 let names;
-
-$.getJSON("https://sar-reg.no/backend/Oppdrag.php", {}, function (data) {
+const x = () => {
+    const timestamp = Date.now();
+    $.getJSON("https://sar-reg.no/backend/Oppdrag.php?time=" + timestamp, {}, function (data) {
     tasks = data;
-    $.getJSON("https://sar-reg.no/backend/OppdragLag.php", {}, function (data2) {
+    $.getJSON("https://sar-reg.no/backend/OppdragLag.php?time=" + timestamp, {}, function (data2) {
         names = data2;
         data.forEach(function (d, i) {
             // add div
@@ -63,6 +64,12 @@ $.getJSON("https://sar-reg.no/backend/Oppdrag.php", {}, function (data) {
         });
     });
 });
+}
+x();
+setInterval(() => {
+    document.querySelectorAll('.example-draggable').forEach(e => e.remove());
+    x()
+}, 5000);
 
 function clickX(event) {
 
