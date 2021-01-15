@@ -1,236 +1,198 @@
-// VERSION 1.0.2
-
+// VERSION 2.0.0
 
 let tasks;
 let names;
-
-function compare( a, b ) {
-    if ( a.hva < b.hva ){
-      return -1;
+const boxes = [
+    {
+        name: 'todo',
+        code: '0'
+    },
+    {
+        name: 'assigned',
+        code: '1'
+    },
+    {
+        name: 'progress',
+        code: '2'
+    },
+    {
+        name: 'finished',
+        code: '3'
+    },
+    {
+        name: 'planned',
+        code: '5'
     }
-    if ( a.hva > b.hva ){
-      return 1;
-    }
-    return 0;
-  }
+];
 
-const x = () => {
-    const timestamp = Date.now();
-    $.getJSON("https://sar-reg.no/backend/Oppdrag.php?time=" + timestamp, {}, function (data) {
-        data = data.sort(compare);
-        tasks = data;
-        $.getJSON("https://sar-reg.no/backend/OppdragLag.php?time=" + timestamp, {}, function (data2) {
+// get the new data each 5 seconds
+setInterval(() => {
+    if (!isEditMode()) getData();
+}, 5000);
+
+const getData = () => {
+    const currentTime = Date.now();
+    const getTasksRoute = `https://sar-reg.no/backend/Oppdrag.php?time=${currentTime}`;
+    const getNamesRoute = `https://sar-reg.no/backend/OppdragLag.php?time=${currentTime}`;
+    $.getJSON(getTasksRoute, {}, tasksList => {
+        tasks = tasksList.sort(compare);
+        $.getJSON(getNamesRoute, {}, namesList => {
+            // remove all tasks boxes on each requests, so we can fill the again
             document.querySelectorAll('.example-draggable').forEach(e => e.remove());
-            names = data2;
-            data.forEach(function (d, i) {
-                var tag = document.createElement("div");
-                tag.id = `adraggable-${i+1}`
-                tag.classList.add("example-draggable");
-                tag.draggable = true;
-                tag.addEventListener("dragstart", onDragStart);
-                
-                var s = document.createElement("span");
-                s.id = `draggable-${i+1}`
-                s.innerHTML = d.hva;
-                tag.appendChild(s);
-                var tag2 = document.createElement("select");
-                tag2.id = `select-${i+1}`;
-                tag2.classList.add("hide");
-                tag2.addEventListener('change', clickY);
-                var emptyOption = document.createElement("option");
+
+            names = namesList;
+            for (const [taskIndex, task] of tasks.entries()) {
+                // add the div
+                const div = document.createElement('div');
+                div.id = `draggable-${taskIndex + 1}`;
+                div.classList.add('example-draggable');
+                div.draggable = true;
+                div.addEventListener('dragstart', onDragStart);
+
+                // add span inside div
+                const span = document.createElement('span');
+                span.id = `name-${taskIndex + 1}`;
+                span.innerHTML = task.hva;
+                div.appendChild(span);
+
+                // add select inside div
+                const select = document.createElement('select');
+                select.id = `select-${taskIndex + 1}`;
+                select.classList.add('hide');
+                select.addEventListener('change', onSelectClick);
+
+                // create a default empty option
+                const emptyOption = document.createElement('option');
                 emptyOption.id = '';
                 emptyOption.value = '';
                 emptyOption.innerHTML = '';
-                tag2.appendChild(emptyOption);
-                data2.forEach((d2, j) => {
-                    var tag3 = document.createElement("option");
-                    tag3.id = d2.id;
-                    tag3.value = d2.id;
-                    tag3.innerHTML = d2.navn;
-                    if (d2.id === d.lag) tag3.setAttribute('selected', true);
-                    tag2.appendChild(tag3);
-                });
-
-                tag.appendChild(tag2);
-                let element;
-                switch (d.status) {
-                    case '0':
-                        element = document.getElementById("todo");
-                        tag.classList.add("todo-color");
-                        tag.addEventListener("click", clickX);
-                        break;
-                    case '1':
-                        element = document.getElementById("assigned");
-                        tag.classList.add("assigned-color");
-                        tag.addEventListener("click", clickX);
-                        break;
-                    case '2':
-                        element = document.getElementById("progress");
-                        tag.classList.add("progress-color");
-                        break;
-                    case '3':
-                        element = document.getElementById("finished");
-                        tag.classList.add("finished-color");
-                        break;
-                    case '5':
-                        element = document.getElementById("planned");
-                        tag.classList.add("planned-color");
-                        tag.addEventListener("click", clickX);
-                        break;
-                    default:
-                        element = document.getElementById("todo");
-                        tag.classList.add("todo-color");
-                        tag.addEventListener("click", clickX);
+                select.appendChild(emptyOption);
+                
+                // add options to select
+                for (const name of names) {
+                    const option = document.createElement('option');
+                    option.id = name.id;
+                    option.value = name.id;
+                    option.innerHTML = name.navn;
+                    if (name.id === task.lag) option.setAttribute('selected', true);
+                    select.appendChild(option);
                 }
-                element.appendChild(tag);
-            });
+                div.appendChild(select);
+                
+                // add div to the correct box
+                const boxName = boxes.find(box => box.code === task.status).name;
+                const box = document.getElementById(boxName);
+                div.classList.add(`${boxName}-color`);
+                if (!['progress', 'finished'].includes(boxName)) div.addEventListener("click", onBoxClick);
+                box.appendChild(div);
+            }
         });
     });
-}
-x();
-setInterval(() => {
-    if (!isEditMode()) x()
-}, 5000);
+};
+
+getData();
+
+const compare = (a, b) => {
+    if (a.hva < b.hva) return -1;
+    if (a.hva > b.hva) return 1;
+    return 0;
+};
 
 const isEditMode = () => {
     const selects = document.querySelectorAll('[id^="select-"]');
-    for(select of selects) {
+    for (const select of selects) {
         if (select.classList[0] !== 'hide') return true;
     }
     return false;
-}
+};
 
-function clickX(event) {
-    console.log(event.target.id);
-    if (event.target.id.startsWith('select')) return;
-    const y = event.target.id.split('-')[1];
-    if (document.getElementById(`draggable-${y}`).classList[0] === 'hide') {
-        document.getElementById(`draggable-${y}`).classList.remove('hide');
-        document.getElementById(`select-${y}`).classList.add('hide');
+const onBoxClick = event => {
+    const id = event.target.id;
+    if (id.startsWith('select')) return;
+    const idNumber = id.split('-')[1];
+    const name = document.getElementById(`name-${idNumber}`);
+    const select = document.getElementById(`select-${idNumber}`);
+    if (name.classList[0] === 'hide') {
+        name.classList.remove('hide');
+        select.classList.add('hide');
     } else {
-        document.getElementById(`draggable-${y}`).classList.add('hide');
-        document.getElementById(`select-${y}`).classList.remove('hide');
-        const otherSelects = document.querySelectorAll('[id^="select-"]');
-        otherSelects.forEach(select => {
-            const x = select.id.split('-')[1];
-            if (select.id !== `select-${y}`) {
+        name.classList.add('hide');
+        select.classList.remove('hide');
+        const selects = document.querySelectorAll('[id^="select-"]');
+        for (const select of selects) {
+            if (select.id !== `select-${idNumber}`) {
+                const selectIdNumber = select.id.split('-')[1];
                 select.classList.add('hide');
-                document.getElementById(`draggable-${x}`).classList.remove('hide');
+                document.getElementById(`name-${selectIdNumber}`).classList.remove('hide');
             }
-        })
-        document.getElementById(`select-${y}`).classList.remove('hide');
-        
+        }
     }
-    // const x = document.getElementById(event.target.id)
-}
+};
 
-function clickY(event) {
-    const y = event.target.id.split('-')[1];
-    const id = `adraggable-${y}`;
-    const draggableElement = document.getElementById(id);
-    const id2 = `draggable-${y}`;
-    const draggableElement2 = document.getElementById(id2);
-    draggableElement2.classList.remove('hide');
-    const id3 = `select-${y}`;
-    const draggableElement3 = document.getElementById(id3);
-    draggableElement3.classList.add('hide');
-    if (document.getElementById(id).parentNode.id === 'todo') {
-        const dropzone = document.getElementById("assigned");
-        dropzone.appendChild(draggableElement);
+const onSelectClick = event => {
+    const id = event.target.id;
+    const idNumber = id.split('-')[1];
+    const draggableDivId = `draggable-${idNumber}`;
+    const draggableDiv = document.getElementById(draggableDivId);
+    const nameId = `name-${idNumber}`;
+    const name = document.getElementById(nameId);
+    const selectId = `select-${idNumber}`;
+    const select = document.getElementById(selectId);
+    name.classList.remove('hide');
+    select.classList.add('hide');
+    const parentNodeId = document.getElementById(draggableDivId).parentNode.id;
+    if (parentNodeId === 'todo') {
+        const dropZone = document.getElementById("assigned");
+        dropZone.appendChild(draggableDiv);
     }
-    const taskId = tasks.find(task => task.hva === draggableElement.innerText).id;
-    const userId = draggableElement3.value;
-    let statusId;
-    switch (document.getElementById(id).parentNode.id) {
-        case 'todo':
-            statusId = '0'
-            break;
-        case 'assigned':
-            statusId = '1'
-            break;
-        case 'progress':
-            statusId = '2'
-            break;
-        case 'finished':
-            statusId = '3'
-            break;
-        case 'planned':
-            statusId = '5'
-            break;
-    }
-    const link = `https://sar-reg.no/backend/OppdragChange.php?id=${taskId}&status=${statusId}&userId=${userId}`
-    $.getJSON(link, {}, function (data) {
-        console.log(data)
-    });
-}
+    const taskId = tasks.find(task => task.hva === draggableDiv.innerText).id;
+    const userId = select.value;
+    const statusId = boxes.find(box => box.name === parentNodeId).code;
+    const currentTime = Date.now();
+    const link = `https://sar-reg.no/backend/OppdragChange.php?id=${taskId}&status=${statusId}&userId=${userId}&time=${currentTime}`;
+    $.getJSON(link);
+};
 
-
-
-
-function onDragStart(event) {
+const onDragStart = event => {
     event.dataTransfer.setData("text/plain", event.target.id);
     event.currentTarget.style.backgroundColor = "yellow";
-}
+};
 
-function onDragOver(event) {
+const onDragOver = event => {
     event.preventDefault();
-}
+};
 
-function onDrop(event) {
-    let dropElement = event.target;
-    if (event.target.id.startsWith('adraggable') || event.target.id.startsWith('draggable')) {
-        if (event.path[1].id.startsWith('adraggable')) {
-            dropElement = document.getElementById(event.path[2].id);
-        } else {
-            dropElement = document.getElementById(event.path[1].id);
-        }
-        
+const onDrop = event => {
+    const dropZone = event.target;
+    const dropZoneId = dropZone.id;
+    if (dropZoneId.startsWith('draggable') || dropZoneId.startsWith('name')) {
+        if (event.path[1].id.startsWith('draggable')) dropZone = document.getElementById(event.path[2].id);
+        else dropZone = document.getElementById(event.path[1].id);
     }
     const id = event.dataTransfer.getData("text");
-    const y = id.split('-')[1];
-    const draggableElement = document.getElementById(id);
-    const dropzone = dropElement;
-    console.log(dropzone.id);
-    dropzone.appendChild(draggableElement);
+    const idNumber = id.split('-')[1];
+    const draggableDiv = document.getElementById(id);
+    dropZone.appendChild(draggableDiv);
     event.dataTransfer.clearData();
-    const id3 = `select-${y}`;
-    const x = document.getElementById(id3);
-    const taskId = tasks.find(task => task.hva === draggableElement.innerText).id;
-    const userId = x.value;
-    let statusId;
-    switch (dropzone.id) {
-        case 'todo':
-            statusId = '0'
-            break;
-        case 'assigned':
-            statusId = '1'
-            break;
-        case 'progress':
-            statusId = '2'
-            break;
-        case 'finished':
-            statusId = '3'
-            break;
-        case 'planned':
-            statusId = '5'
-            break;
-    }
-    const link = `https://sar-reg.no/backend/OppdragChange.php?id=${taskId}&status=${statusId}&userId=${userId}`
-    $.getJSON(link, {}, function (data) {});
-}
+    const selectId = `select-${idNumber}`;
+    const select = document.getElementById(selectId);
+    const taskId = tasks.find(task => task.hva === draggableDiv.innerText).id;
+    const userId = select.value;
+    const statusId = boxes.find(box => box.name === dropZone.id).code;
+    const currentTime = Date.now();
+    const link = `https://sar-reg.no/backend/OppdragChange.php?id=${taskId}&status=${statusId}&userId=${userId}&time=${currentTime}`;
+    $.getJSON(link);
+};
 
-function containerClicked(event) {
-    console.log(event.target.id);
+const containerClicked = event => {
     const id = event.target.id;
-    if (id.startsWith('draggable') || id.startsWith('adraggable') || id.startsWith('select')) {
-        return;
-    }
+    if (id.startsWith('draggable') || id.startsWith('name') || id.startsWith('select')) return;
     const selects = document.querySelectorAll('[id^="select-"]');
-    selects.forEach(select => {
+    for (const select of selects) {
         select.classList.add('hide');
-    });
-    const selects2 = document.querySelectorAll('[id^="draggable-"]');
-    selects2.forEach(select => {
-        select.classList.remove('hide');
-    });
-}
+    }
+    const names = document.querySelectorAll('[id^="name-"]');
+    for (const name of names) {
+        name.classList.remove('hide');
+    }
+};
